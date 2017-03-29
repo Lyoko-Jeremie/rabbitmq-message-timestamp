@@ -1,8 +1,8 @@
-PROJECT = rabbitmq_message_timestamp
-PROJECT_DESCRIPTION = RabbitMQ Message Timestamp
+PROJECT = rabbitmq_message_timestamp_and_user_id_checker
+PROJECT_DESCRIPTION = RabbitMQ Message Timestamp And User Id Checker
 
 define PROJECT_APP_EXTRA_KEYS
-	{broker_version_requirements, ["3.7.0"]}
+	{broker_version_requirements, ["3.6.8"]}
 endef
 
 DEPS = rabbit_common rabbit

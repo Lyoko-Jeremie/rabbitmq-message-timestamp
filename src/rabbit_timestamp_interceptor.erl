@@ -39,7 +39,7 @@ init(_Ch) ->
 
 description() ->
     [{description,
-      <<"Adds current timestamp to messages as they enter RabbitMQ">>}].
+      <<"Adds current timestamp to messages as they enter RabbitMQ, And check them must have user_id.">>}].
 
 intercept(#'basic.publish'{} = Method, Content, _IState) ->
     DecodedContent = rabbit_binary_parser:ensure_content_decoded(Content),
