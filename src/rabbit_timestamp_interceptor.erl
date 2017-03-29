@@ -23,6 +23,8 @@
 
 -export([description/0, intercept/3, applies_to/0, init/1]).
 
+-import(rabbit_misc, [format/2, protocol_error/3]).
+
 -rabbit_boot_step({?MODULE,
                    [{description, "timestamp interceptor"},
                     {mfa, {rabbit_registry, register,
@@ -44,7 +46,7 @@ description() ->
 intercept(#'basic.publish'{} = Method, Content, _IState) ->
     DecodedContent = rabbit_binary_parser:ensure_content_decoded(Content),
     Timestamp = os:system_time(seconds),
-    case set_content_timestamp(DecodedContent, Timestamp) of
+    case set_content_timestamp_and_check(DecodedContent, Timestamp) of
         {ok, Content2} ->
             {Method, Content2};
         {error, Err} ->
@@ -61,11 +63,14 @@ applies_to() ->
 %%precondition_failed
 
 
-set_content_timestamp(#content{properties = Props} = Content, Timestamp)
+set_content_timestamp_and_check(#content{properties = Props} = _Content, _Timestamp)
   when Props#'P_basic'.user_id == undefined ->
     {error, precondition_failed("Error checking user_id in: ~p.", [Props#'P_basic'.message_id])};
 
-set_content_timestamp(#content{properties = Props} = Content, Timestamp) ->
+set_content_timestamp_and_check(#content{properties = Props} = Content, Timestamp) ->
     %% we need to reset properties_bin = none so the new properties
     %% get serialized when deliverying the message.
     {ok, Content#content{properties = Props#'P_basic'{timestamp = Timestamp},properties_bin = none}}.
+
+precondition_failed(Format, QName) ->
+    protocol_error(precondition_failed, Format, QName).
