@@ -63,11 +63,13 @@ applies_to() ->
 
 % if exchange not start with 'cs-', bypass it
 % otherwise, to check user_id
-filter_exchange(Content, Method)
-  when Method#'basic.publish'.exchange == <<'cs-'/utf8, _/binary>> ->
-    check_user_id(Content, Method);
-filter_exchange(Content, _Method) ->
-    {ok, Content}.
+filter_exchange(Content, Method) ->
+    case Method#'basic.publish'.exchange of
+      <<'cs-'/utf8, _/binary>> ->
+        check_user_id(Content, Method);
+      _ ->
+        {ok, Content}
+    end.
 
 % if user_id not set, failed the message
 % otherwise, to add timestamp
