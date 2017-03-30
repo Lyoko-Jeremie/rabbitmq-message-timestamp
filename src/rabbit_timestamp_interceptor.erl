@@ -46,7 +46,7 @@ description() ->
 intercept(#'basic.publish'{} = Method, Content, _IState) ->
     DecodedContent = rabbit_binary_parser:ensure_content_decoded(Content),
     Timestamp = os:system_time(seconds),
-    case set_content_timestamp_and_check(DecodedContent, Timestamp) of
+    case set_content_timestamp_and_check(DecodedContent, Timestamp, Method) of
         {ok, Content2} ->
             {Method, Content2};
         {error, Err} ->
@@ -63,11 +63,11 @@ applies_to() ->
 %%precondition_failed
 
 
-set_content_timestamp_and_check(#content{properties = Props} = _Content, _Timestamp)
+set_content_timestamp_and_check(#content{properties = Props} = _Content, _Timestamp, Method)
   when Props#'P_basic'.user_id == undefined ->
-    {error, precondition_failed("Error checking user_id in: ~p.", [Props])};
+    {error, precondition_failed("Error checking user_id in: ~p~n~p.", [Props, Method])};
 
-set_content_timestamp_and_check(#content{properties = Props} = Content, Timestamp) ->
+set_content_timestamp_and_check(#content{properties = Props} = Content, Timestamp, _Method) ->
     %% we need to reset properties_bin = none so the new properties
     %% get serialized when deliverying the message.
     {ok, Content#content{properties = Props#'P_basic'{timestamp = Timestamp},properties_bin = none}}.
