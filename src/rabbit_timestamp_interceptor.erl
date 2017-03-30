@@ -45,8 +45,7 @@ description() ->
 
 intercept(#'basic.publish'{} = Method, Content, _IState) ->
     DecodedContent = rabbit_binary_parser:ensure_content_decoded(Content),
-    Timestamp = os:system_time(seconds),
-    case set_content_timestamp_and_check(DecodedContent, Timestamp, Method) of
+    case filter_exchange(DecodedContent, Method) of
         {ok, Content2} ->
             {Method, Content2};
         {error, Err} ->
@@ -62,14 +61,27 @@ applies_to() ->
 %%----------------------------------------------------------------------------
 %%precondition_failed
 
+% if exchange not start with 'cs-', bypass it
+% otherwise, to check user_id
+filter_exchange(Content, Method)
+  when Method#'basic.publish'.exchange == <<'cs-'/utf8, _/binary>> ->
+    check_user_id(Content, Method);
+filter_exchange(Content, _Method) ->
+    {ok, Content}.
 
-set_content_timestamp_and_check(#content{properties = Props} = _Content, _Timestamp, Method)
+% if user_id not set, failed the message
+% otherwise, to add timestamp
+check_user_id(#content{properties = Props} = _Content, Method)
   when Props#'P_basic'.user_id == undefined ->
     {error, precondition_failed("Error checking user_id in: ~p~n~p.", [Props, Method])};
+check_user_id(Content, _Method) ->
+    set_content_timestamp(Content).
 
-set_content_timestamp_and_check(#content{properties = Props} = Content, Timestamp, _Method) ->
+% add timestamp to message
+set_content_timestamp(#content{properties = Props} = Content) ->
     %% we need to reset properties_bin = none so the new properties
     %% get serialized when deliverying the message.
+    Timestamp = os:system_time(seconds),
     {ok, Content#content{properties = Props#'P_basic'{timestamp = Timestamp},properties_bin = none}}.
 
 precondition_failed(Format, QName) ->
