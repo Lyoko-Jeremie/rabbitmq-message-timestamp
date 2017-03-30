@@ -65,7 +65,7 @@ applies_to() ->
 
 set_content_timestamp_and_check(#content{properties = Props} = _Content, _Timestamp)
   when Props#'P_basic'.user_id == undefined ->
-    {error, precondition_failed("Error checking user_id in: ~p.", [Props#'P_basic'.message_id])};
+    {error, precondition_failed("Error checking user_id in: ~p.", [Props])};
 
 set_content_timestamp_and_check(#content{properties = Props} = Content, Timestamp) ->
     %% we need to reset properties_bin = none so the new properties
