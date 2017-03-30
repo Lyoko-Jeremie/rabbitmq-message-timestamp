@@ -65,7 +65,7 @@ applies_to() ->
 % otherwise, to check user_id
 filter_exchange(Content, Method) ->
     case Method#'basic.publish'.exchange of
-      <<'cs-'/utf8, _/binary>> ->
+      <<"cs-"/utf8, _/binary>> ->
         check_user_id(Content, Method);
       _ ->
         {ok, Content}
