@@ -1,5 +1,5 @@
-PROJECT = rabbitmq_message_timestamp_and_user_id_checker_in_cs_exchange
-PROJECT_DESCRIPTION = RabbitMQ Message Timestamp And User Id Checker in cs- exchange
+PROJECT = rabbitmq_message_course_selection_filter
+PROJECT_DESCRIPTION = RabbitMQ Message Course Selection Filter
 
 define PROJECT_APP_EXTRA_KEYS
 	{broker_version_requirements, ["3.6.8"]}
